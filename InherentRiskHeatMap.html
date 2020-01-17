@@ -1,0 +1,322 @@
+﻿<!-- HTML FILE-->
+    <div class="container-fluid rowfluidextensionclass">
+        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+            <div class="row-fluid">
+                <div class="page-header">
+                    <h4>
+                        <span class="ico ico-heatmaps"></span>
+                        <label id="Screenname" data-bind="text:$root.ScreenName()"></label>
+                        <div class="mt-2 pull-right dropbtn">
+                            <button id="BusinessUnitFilterBtnCh pt-1" style="margin-right: -1.5rem; margin-top:0.1%;" class="pull-left dropbtn" data-bind="if: ($root.AmlInhHeatMapData().length > 0), click: $root.openSideNav" title="Click to see Business Unit Filters">
+                                <i class="fa fa-filter" aria-hidden="true"></i>
+                                Filter
+                                <span class="badge ml-2" data-bind="text: NumberOfBUsSelected" title="Filtered Business Units"></span>
+                                <span class="fa fa-chevron-down" style=""></span>
+                            </button>
+                            <span id="LevelsDiv">
+                            </span>
+                            <button id="exportDropdownBtn" data-bind="click: DisplayExportDropdown" class="dropbtn">Actions<span class="ml-1 fa fa-chevron-down"></span></button>
+                            <div id="exportDropdown" class="dropdown-content">
+                                <a href="#" data-bind="click: $root.NavigateToSSRSExportReport"> <i class="fa fa-download"></i> Export to Excel</a>
+                            </div>
+                        </div>
+                    </h4>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="loadingImgMain" role="dialog" data-backdrop="static" aria-labelledby="modalLabel" aria-hidden="true" style="display:none;">
+            <div class="modal-dialog">
+                <img style="margin-top:50%;" src="../../../Content/images/loading.gif" class="loading-gif" />
+            </div>
+        </div>
+        <div id="sideNav" class="sidenav bg-light col-lg-12" style="display:grid; box-shadow:#62B5E5 0px 1px 10px 0px ">
+
+            <div class="col-lg-12 bg-light">
+                <div id="OrganizationalLevel"></div>
+            </div>
+
+            <div id="wRiskFactorReorderTableDiv" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 mt-4" style="height: 20vh;overflow-y: auto; display:none;">
+                <table id="wBUUnittable" class="table table-bordered table-responsive table-condensed">
+                    <tbody data-bind="foreach: $root.BusinessUnitListForFilters">
+                        <tr>
+                            <td style="display:none" data-bind="text: BusinessUnitId"></td>
+                            <td style="display:none" data-bind="text: SubLevelId"></td>
+                            <td>
+                                <label class="cc-checkbox">
+                                    <input type="checkbox" data-bind="checked: isChecked" />
+                                    <span class="cc-facet-result-text tag-text"></span>
+                                </label>
+                                <span style="font-weight: bold;" data-bind="text:BusinessUnitName" class="cc-facet-result-text tag-text"></span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-lg-12 d-flex mb-2" style="background-color: rgba(95,93,93,0.15);">
+                <div id="ParentDynamicOrgOptedFilters" class="col-lg-10" style="overflow-y: auto;max-height:12vh">
+
+                    <div id="DynamicOrgOptedFilters" style="display:block;"></div>
+                </div>
+                <div class="col-lg-2" style="max-height:12vh">
+                    <div class="d-flex col-lg-12 pb-4 pt-2"><span class="font-weight-bold" data-bind="text: NumberOfBUsSelected"></span><span>&emsp;</span><span>BU selected</span></div>
+
+                    <div class="d-flex col-lg-12">
+                        <button id="clearFilter" class="btn pull-right btn-primary btn-sm mr-3" title="Click to Clear All Filters" data-bind="click: $root.ClearAllBuFilters">
+                            <i class="fa fa-refresh"></i>
+                            Clear
+                        </button>
+                        <button id="filterBU" class="btn pull-right btn-primary btn-sm" title="Click to Apply Filter" data-bind="click: $root.ApplyBuFilters" style="margin-right: 1rem;">
+                            <i class="fa fa-filter" aria-hidden="true"></i>
+                            Apply
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div id="OrgFilterError" class="alert-warning" style="display:none"><label class="control-label mb-1" style="padding-left: 4rem;">Please remove all filters on Business Units to apply this filter.</label></div>
+            <div id="BUFilterError" class="alert-warning" style="display:none"><label class="control-label mb-1" style="padding-left: 4rem;">Please remove all filters on Organization levels to apply this filter.</label></div>
+        </div>
+        <div id="RaHeatmapTabAML">
+            <div class="scroller scroller-left btn-info"><i class="fa-chevron-left"></i></div>
+            <div class="scroller scroller-right btn-info"><i class="fa-chevron-right"></i></div>
+            <div class="tabswrapper">
+                <ul class="tabs scrolltabs" id="RiskAreaHeatmapAMLUl" data-bind="foreach: $root.BusinessLevelList">
+                    <li aria-controls="tabContent" data-bind="attr: {'id': BusinessLevelId}, click: $root.BusinessLevelTabClick">
+                        <a href="#tabContent" class="long-tabs" data-bind="text: BusinessLevelName, attr: {'id': BusinessLevelId,'title': BusinessLevelName}"></a>
+                    </li>
+                </ul>
+            </div>
+            <div id="tabContent">
+
+                <div id="error" class="alert-warning" style="display:none"><label class="control-label">There is no data available for the Heatmap.</label></div>
+                <div id="MainInherentHeatMapDiv" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 heatmap-tables auto-scroll-y " style="display:none">
+                    <div id="tblInhHeatMapOuterDiv" data-bind="if: $root.ClickedBusinessLevelId() == 0, css:{'col-md-12 col-lg-12': ($root.AmlInhHeatMapData().length > 3), 'col-md-8 col-lg-8': ($root.AmlInhHeatMapData().length == 1)}">
+                        <table id="tblInhHeatMap" class="table table-bordered  table-condensed nowrap">
+                            <thead>
+                                <tr id="InheatmapTr1">
+                                    <th class="site_name label-info">
+                                        <span class="fa fa-arrow-down pl-3"></span> Areas /  Business Units
+                                        <span style="" class="fa fa-arrow-right"></span> <span data-bind="html: $root.DataTableColumnWidth()"></span>
+                                    </th>
+                                    <!-- ko foreach:$root.AmlInhHeatMapData -->
+                                    <!-- ko if:$root.isAml() == true -->
+                                    <th class="Heatmaplong text-center long header-ellipsis" colspan="1" data-bind="text: BuName, attr:{id: BU_ID, 'title': BU_NAME}"></th>
+                                    <!-- /ko -->
+                                    <!-- ko if:$root.isAml() == false -->
+                                    <th class="Heatmaplong text-center long header-ellipsis" colspan="3" data-bind="text: BuName, attr:{id: BU_ID, 'title': BU_NAME}"></th>
+                                    <!-- /ko -->
+                                    <!--   <th class="Heatmaplong" style="text-align:center;" colspan="1" data-bind="style: { colspan: $root.isAml()  ? '1' : '3' } text: BuName, attr:{id: BU_ID, 'title': BU_NAME}, css:{'long header-ellipsis': true}"></th>-->
+                                    <!-- /ko -->
+                                </tr>
+
+                                <!-- ko if: $root.ShowFinalData()== true -->
+                                <tr id="InheatmapTr2" class="headcolMinTotal">
+                                    <th class="site_name label-info headcolMinTotal">Overall Calculated Score</th>
+                                    <!-- ko foreach:$root.AggregateBUDetails -->
+                                    <!-- ko if:$root.isAml() == true -->
+                                    <th class="threshold-cell text-center" colspan="1" data-bind="text: RISK_SCORE, css: RISK_CSS"></th>
+                                    <!-- /ko -->
+                                    <!-- ko if:$root.isAml() == false -->
+                                    <th class="threshold-cell text-center" colspan="3" data-bind="text: RISK_SCORE, css: RISK_CSS"></th>
+                                    <!-- /ko -->
+                                    <!-- /ko -->
+                                </tr>
+                                <tr id="InheatmapTr3" class="headcolMinTotal">
+                                    <th class="site_name label-info headcolMinTotal">Calculated Level</th>
+                                    <!-- ko foreach:$root.AggregateBUDetails -->
+                                    <!-- ko if:$root.isAml() == true -->
+                                    <th class="threshold-cell text-center" colspan="1" data-bind="text: CALC_LEVEL_TEXT, css: CALC_CSS, attr: {'title': CALC_LEVEL_ToolTip}"></th>
+                                    <!-- /ko -->
+                                    <!-- ko if:$root.isAml() == false -->
+                                    <th class="threshold-cell text-center" colspan="3" data-bind="text: CALC_LEVEL_TEXT, css: CALC_CSS, attr: {'title': CALC_LEVEL_ToolTip}"></th>
+                                    <!-- /ko -->
+                                    <!-- /ko -->
+                                </tr>
+                                <tr id="InheatmapTr4" class="headcolMinTotal">
+                                    <th class="site_name label-info headcolMinTotal">Qualitatively Adjusted Rating <i class="fa fa-info-circle" title="Click the corresponding cells to see Qualitatively Adjusted Rating comments."></i></th>
+                                    <!-- ko foreach:$root.AggregateBUDetails -->
+                                    <!-- ko if:$root.isAml() == true -->
+                                    <th class="threshold-cell text-center" colspan="1" data-bind="text: COMPLIANCE_LEVEL_TEXT, css: COMPLIANCE_CSS, attr: {'title': COMPLIANCE_LEVEL_ToolTip}, click:ClickShowComments"></th>
+                                    <!-- /ko -->
+                                    <!-- ko if:$root.isAml() == false -->
+                                    <th class="threshold-cell text-center" colspan="3" data-bind="text: COMPLIANCE_LEVEL_TEXT, css: COMPLIANCE_CSS, attr: {'title': COMPLIANCE_LEVEL_ToolTip}, click:ClickShowComments"></th>
+                                    <!-- /ko -->
+                                    <!-- /ko -->
+                                </tr>
+                                <tr id="InheatmapTr5" class="headcolMinTotal">
+                                    <th class="site_name label-info headcolMinTotal">Final Level</th>
+                                    <!-- ko foreach:$root.AggregateBUDetails -->
+                                    <!-- ko if:$root.isAml() == true -->
+                                    <th class="threshold-cell text-center" colspan="1" data-bind="text: FINAL_LEVEL_TEXT, css: FINAL_CSS, attr: {'title': FINAL_LEVEL_ToolTip}"></th>
+                                    <!-- /ko -->
+                                    <!-- ko if:$root.isAml() == false -->
+                                    <th class="threshold-cell text-center" colspan="3" data-bind="text: FINAL_LEVEL_TEXT, css: FINAL_CSS, attr: {'title': FINAL_LEVEL_ToolTip}"></th>
+                                    <!-- /ko -->
+                                    <!-- /ko -->
+                                </tr>
+                                <!-- /ko -->
+                                <tr id="InheatmapTr6">
+                                    <th class="site_name label-info pl-3">Risk Type <span style="" class="fa fa-arrow-right"></span></th>
+                                    <!-- ko foreach:$root.AmlInhHeatMapData -->
+                                    <!-- ko if:$root.isAml() == false -->
+                                    <th class="Heatmaplong text-center long header-ellipsis" colspan="1" title="Internal Inherent Risk">Internal Inherent Risk</th>
+                                    <th class="Heatmaplong text-center long header-ellipsis" colspan="1" title="External Inherent Risk">External Inherent Risk</th>
+                                    <!-- /ko -->
+                                    <th class="Heatmaplong text-center long header-ellipsis" colspan="1" title="Overall Inherent Risk">Overall Inherent Risk</th>
+                                    <!-- /ko -->
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                                <!-- ko foreach:$root.SubFactorGridDataList -->
+                                <tr>
+                                    <td class="headcolMinTBL">
+                                        <span data-bind="text: Name, style: {'padding-left': LevelsId}, attr:{'title': NameTitle}, css:{ 'labelCss': PId == 0, 'labelCss2': LevelId == 3, 'labelCss1': LevelId == 2}"></span>
+                                    </td>
+                                    <!-- ko foreach:BusinessUnitCountList -->
+                                    <!-- ko if:$root.isAml() == false -->
+                                    <td class="threshold-cell" data-bind="text: Int_RISK_LEVEL, css: Int_RISK_CSS, attr: {visible: $root.ShowOrgLevelColumns()}"></td>
+                                    <td class="threshold-cell" data-bind="text: Ext_RISK_LEVEL, css: Ext_RISK_CSS, attr: {visible: $root.ShowOrgLevelColumns()}"></td>
+                                    <!-- /ko -->
+                                    <td class="threshold-cell" data-bind="text: RISK_LEVEL, css: RISK_CSS"></td>
+                                    <!-- /ko -->
+
+                                </tr>
+                                <!-- /ko -->
+
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="tblOrgInhHeatMapOuterDiv" data-bind="if: $root.ClickedBusinessLevelId() != 0, css:{'col-md-12 col-lg-12': ($root.AmlInhHeatMapData().length > 5), 'col-md-8 col-lg-8': ($root.AmlInhHeatMapData().length > 2), 'col-md-5 col-lg-5': ($root.AmlInhHeatMapData().length <= 2)}">
+                        <table id="tblInhHeatMapOrg" class="table table-bordered table-condensed nowrap">
+                            <thead>
+                                <tr id="InheatmapOTr">
+                                    <th class="site_name label-info">
+                                        <span style="padding-left:1rem;" class="fa fa-arrow-down"></span> Areas /  Business Units
+                                        <span style="" class="fa fa-arrow-right"></span> <span data-bind="html: $root.DataTableColumnWidth()"></span>
+                                    </th>
+                                    <!-- ko foreach:$root.AmlInhHeatMapData -->
+                                    <th class="Heatmaplong text-center long header-ellipsis" data-bind="text: BuName, attr:{id: BU_ID, 'title': BU_NAME}"></th>
+                                    <!-- /ko -->
+                                </tr>
+
+                                <!-- ko if: $root.ShowFinalData()== true -->
+                                <tr id="heatmapOTr3">
+                                    <th class="site_name label-info headcolMinTotal">Overall Calculated Score</th>
+                                    <!-- ko foreach:$root.AggregateBUDetails -->
+                                    <th class="threshold-cell text-center" data-bind="text: RISK_SCORE, css: RISK_CSS"></th>
+                                    <!-- /ko -->
+                                </tr>
+                                <tr id="heatmapOTr4">
+                                    <th class="site_name label-info headcolMinTotal">Calculated Level</th>
+                                    <!-- ko foreach:$root.AggregateBUDetails -->
+                                    <th class="threshold-cell text-center" data-bind="text: CALC_LEVEL_TEXT, css: CALC_CSS, attr: {'title': CALC_LEVEL_ToolTip}"></th>
+                                    <!-- /ko -->
+                                </tr>
+                                <tr id="heatmapOTr5">
+                                    <th class="site_name label-info headcolMinTotal">Qualitatively Adjusted Rating <i class="fa fa-info-circle" title="Click the corresponding cells to see Qualitatively Adjusted Rating comments."></i></th>
+                                    <!-- ko foreach:$root.AggregateBUDetails -->
+                                    <th class="threshold-cell text-center" data-bind="text: COMPLIANCE_LEVEL_TEXT, css: COMPLIANCE_CSS, attr: {'title': COMPLIANCE_LEVEL_ToolTip}, click:ClickShowComments"></th>
+                                    <!-- /ko -->
+                                </tr>
+                                <tr id="heatmapOTr6">
+                                    <th style="" class="site_name label-info headcolMinTotal">Final Level</th>
+                                    <!-- ko foreach:$root.AggregateBUDetails -->
+                                    <th class="threshold-cell text-center" data-bind="text: FINAL_LEVEL_TEXT, css: FINAL_CSS, attr: {'title': FINAL_LEVEL_ToolTip}"></th>
+                                    <!-- /ko -->
+                                </tr>
+                                <!-- /ko -->
+                                <tr id="heatmapOTr2">
+                                    <th style="padding-left:3rem !important" class="site_name label-info">Risk Type <span style="" class="fa fa-arrow-right"></span></th>
+                                    <!-- ko foreach:$root.AmlInhHeatMapData -->
+                                    <th class="Heatmaplong text-center long header-ellipsis" colspan="1" title="Overall Inherent Risk">Overall Inherent Risk</th>
+                                    <!-- /ko -->
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                                <!-- ko foreach:$root.SubFactorGridDataList -->
+                                <tr>
+                                    <td class="headcolMinTBL">
+                                        <span data-bind="text: Name, style: {'padding-left': LevelsId}, attr:{'title': NameTitle}, css:{ 'labelCss': PId == 0, 'labelCss2': LevelId == 3, 'labelCss1': LevelId == 2}"></span>
+                                    </td>
+                                    <!-- ko foreach:BusinessUnitCountList -->
+                                    <td class="threshold-cell" data-bind="text: RISK_LEVEL, css: RISK_CSS"></td>
+                                    <!-- /ko -->
+
+                                </tr>
+                                <!-- /ko -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<!--<div class="modal fade" id="SetOverrideCommentsPopUp" role="dialog" data-backdrop="static" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content" id="modalContent" data-bind="with: $root.overrideCommentDetails">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true" data-bind="click:cancelOverride">×</button>
+                <i class="title-icon col-md-1 fa fa-comments"></i><h4 class="modal-title" id="modalLabel">Set Override Comments</h4>
+            </div>
+            <div class="modal-body modal-fixed-header">
+                <div id="ResponseCommentsMain">
+                    <div id="ResponseTextAreaDiv">
+                        <textarea id="OverrideTextArea" class="form-control" placeholder="Enter Override Comments Here" data-bind="value: OverrideComment, event: {keydown: $root.OcKeypress, keyup: $root.OcKeyUp}"></textarea>
+                        <span><label data-bind="text: $root.OverrideCommentsChars()+' Characters Left', css:{'text-danger': ($root.OverrideCommentsChars() < 0)}"></label></span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <span>
+                    <button class="btn btn-success btn-sm" type="submit" data-bind="click:SaveOverrideComment">
+                        <i class="fa fa-check"></i>
+                        Comment
+                    </button>
+                </span>
+                <button class="btn btn-default btn-sm " data-dismiss="modal" aria-hidden="true" data-bind="click:cancelOverride">
+                    <i class="fa fa-times"></i>
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>-->
+
+<div class="modal fade" id="ViewOverrideCommentsPopUp" role="dialog" data-backdrop="static" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content" id="modalContent">
+            <div class="modal-header">
+                <i class="title-icon col-md-1 fa fa-comments"></i><h4 class="modal-title" id="modalLabel">Qualitatively Adjusted Rating Comments</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            </div>
+            <div class="modal-body modal-fixed-header">
+                <div id="ResponseCommentsMain" class="container-fluid no-padding">
+                    <label id=" lblnooverridecomment" class="NoComments-leftPadding" data-bind="if: ($root.OverrideCommentsList().length == 0)">
+                        There are no Qualitatively Adjusted Rating Comments for this Business Unit.
+                    </label>
+                    <div id="ResponseComments" class="ResponseComments col-md-12 no-padding no-padding-right">
+                        <div data-bind="foreach: $root.OverrideCommentsList()">
+                            <div class="col-md-12  alert alert-info">
+                                <div class="col-md-12">
+                                    <label class="pushbackcomments-by" data-bind="text: FullName">
+                                    </label>
+                                    <label class="PushbackComments-date" data-bind="text: UploadedDate"></label>
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="comment-entered" data-bind="text: CommentText"></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default btn-sm" type="submit" data-dismiss="modal">
+                    <i class="fa fa-times"></i>
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
